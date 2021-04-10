@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <windows.h>
 
 
 // Create a random number between 0 to 1
@@ -47,6 +48,15 @@ int dequeue(Queue** head) {
 		*head = NULL;
 
 	return retval;
+}
+
+void freeQueue(Queue* head) {
+	Queue* temp;
+	while (head) {
+		temp = head->next;
+		free(head);
+		head = temp;
+	}
 }
 
 // A structure to represent a graph.
@@ -132,7 +142,7 @@ bool is_isolated(Graph* graph) {
 	return 0;
 }
 
-void bfs(Graph* graph, int src, bool* visited) {
+void bfs(Graph* graph, int src, int dest, bool* visited, int* distance) {
 	// Set source as visited
 	visited[src] = true;
 	Queue* head = NULL;
@@ -148,9 +158,19 @@ void bfs(Graph* graph, int src, bool* visited) {
 				enqueue(&head, i);
 				// Set as visited
 				visited[i] = true;
+				// If dst != -1, which means we search for a distance from the source
+				if (dest != -1) {
+					distance[i] = distance[vis] + 1;
+
+					if (i == dest) {
+						freeQueue(head);
+						return;
+					}
+				}
 			}
 		}
 	}
+	freeQueue(head);
 }
 
 bool connectivity(Graph* graph) {
@@ -161,7 +181,7 @@ bool connectivity(Graph* graph) {
 	for (i = 0; i < V; i++)
 		visited[i] = false;
 
-	bfs(graph, 0, visited);
+	bfs(graph, 0, -1, visited, NULL);
 
 	for (i = 0; i < V; i++) {
 		if (!(visited[i])) {
@@ -174,22 +194,60 @@ bool connectivity(Graph* graph) {
 	return true;
 }
 
-// Driver program to test above functions
+int diameter(Graph* graph) {
+	int V = graph->V, i, j, h, diam = 0;
+
+	bool* visited = malloc(V * sizeof(bool));
+	int* distance = calloc(V, sizeof(int));
+
+	for (i = 0; i < V; i++)
+		visited[i] = false;
+
+	for (i = 0; i < V; i++) {
+		for (j = i + 1; j < V; j++) {
+			bfs(graph, i, j, visited, distance);
+			if (distance[j] > diam)
+				diam = distance[j];
+
+			for (h = 0; h < V; h++) {
+				visited[h] = false;
+				distance[h] = 0;
+			}
+		}
+	}
+
+	free(visited);
+	free(distance);
+
+	return diam;
+}
+
+
+void edrosRenyiModel(int V, double P) {
+
+}
+
 int main()
 {
-	// create the graph given in above fugure
-	for (int i = 1; i <= 1000; i++)
+	DWORD ThreadId;
+	HANDLE ThreadHandle;
+	int isolated = 0, connect = 0, diam = -1;
+	for (int i = 1; i <= 10; i++)
 	{
 		int V = 1000;
-		struct Graph *graph = build_random_graph(V, 0.009);
+		struct Graph *graph = build_random_graph(V, 0.12);
 		printf("Graph number %d:\n", i);
-		//printGraph(graph);
-		printf("Is Isolated: %d\n", is_isolated(graph));
-		printf("Connectivity: %d\n\n", connectivity(graph));
+		isolated = is_isolated(graph);
+		if (!isolated)
+			connect = connectivity(graph);
+		if (connect)
+			diam = diameter(graph);
+		printf("Is Isolated: %d\n", isolated);
+		printf("Connectivity: %d\n", connect);
+		printf("Diameter: %d\n\n", diam);
 		freeGraph(graph);
 	}
 	
-	// print the adjacency list representation of the above graph
 	
 	return 0;
 }
