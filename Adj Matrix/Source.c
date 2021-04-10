@@ -9,6 +9,11 @@ double rnd_gnr() {
 	return (double)rand() / (double)RAND_MAX;
 }
 
+typedef struct Param {
+	int V;
+	double P;
+} Gparam;
+
 // A structure to represent a queue.
 typedef struct Queue {
 	int val;
@@ -223,31 +228,42 @@ int diameter(Graph* graph) {
 }
 
 
-void edrosRenyiModel(int V, double P) {
-
+DWORD WINAPI edrosRenyiModel(Gparam* Param) {
+	int isolated = 0, connect = 0, diam = -1;
+	int V = Param->V;
+	double P = Param->P;
+	struct Graph* graph = build_random_graph(V, P);
+	//printf("Graph number %d:\n", i);
+	isolated = is_isolated(graph);
+	if (!isolated)
+		connect = connectivity(graph);
+	if (connect)
+		diam = diameter(graph);
+	printf("Is Isolated: %d\n", isolated);
+	printf("Connectivity: %d\n", connect);
+	printf("Diameter: %d\n\n", diam);
+	freeGraph(graph);
 }
 
-int main()
+void main()
 {
 	DWORD ThreadId;
-	HANDLE ThreadHandle;
-	int isolated = 0, connect = 0, diam = -1;
-	for (int i = 1; i <= 10; i++)
-	{
-		int V = 1000;
-		struct Graph *graph = build_random_graph(V, 0.12);
-		printf("Graph number %d:\n", i);
-		isolated = is_isolated(graph);
-		if (!isolated)
-			connect = connectivity(graph);
-		if (connect)
-			diam = diameter(graph);
-		printf("Is Isolated: %d\n", isolated);
-		printf("Connectivity: %d\n", connect);
-		printf("Diameter: %d\n\n", diam);
-		freeGraph(graph);
+	HANDLE * ThreadHandle = malloc(10*sizeof(HANDLE));
+	
+	Gparam Param;
+	Param.P = 0.12;
+	Param.V = 500;
+	for (int i = 0; i < 10; i++) {
+		ThreadHandle[i] = CreateThread(NULL, /* default security attributes */ 0, /* default stack size */
+			edrosRenyiModel, /* thread function */ &Param, /* parameter to thread function */ 0, /* default creation    flags */ &ThreadId);
+		/* returns the thread identifier */
 	}
-	
-	
-	return 0;
+	WaitForMultipleObjects(10, ThreadHandle, TRUE, INFINITE);
+
+	for (int i = 0; i < 10; i++) {
+		CloseHandle(ThreadHandle[i]);
+
+	}
+
+
 }
