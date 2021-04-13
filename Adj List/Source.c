@@ -372,6 +372,6 @@ void main()
 	srand(time(0));
 
 	threshold1(1000, 500);
-	//threshold2(1000, 500);
+	threshold2(1000, 500);
 	threshold3(1000, 500);
 }
