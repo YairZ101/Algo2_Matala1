@@ -285,7 +285,7 @@ void threshold1(int V, int NOGraphs) {
 				count++;
 			freeGraph(graph);
 		}
-		fprintf(fpt, "%d,", count);
+		fprintf(fpt, "%f,", (float)count / (float)NOGraphs);
 	}
 
 	fclose(fpt);
@@ -324,7 +324,7 @@ void threshold2(int V, int NOGraphs) {
 				count++;
 			freeGraph(graph);
 		}
-		fprintf(fpt, "%d,", count);
+		fprintf(fpt, "%f,", (float)count / (float)NOGraphs);
 	}
 
 	fclose(fpt);
@@ -359,7 +359,7 @@ void threshold3(int V, int NOGraphs) {
 				count++;
 			freeGraph(graph);
 		}
-		fprintf(fpt, "%d,", count);
+		fprintf(fpt, "%f,", (float)count / (float)NOGraphs);
 	}
 
 	fclose(fpt);
@@ -371,6 +371,6 @@ void main()
 	srand(time(0));
 
 	threshold1(1000, 500);
-	threshold2(1000, 500);
+	//threshold2(1000, 500);
 	threshold3(1000, 500);
 }
